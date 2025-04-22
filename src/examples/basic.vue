@@ -1,36 +1,86 @@
 <template>
-    <div>
-        <SkuForm
-            :source-attribute="sourceAttribute"
-            v-model:attribute="attribute"
-            v-model:sku="sku"
-        />
-        <el-row :gutter="20">
-            <el-col :span="12">
-                <el-divider content-position="left">attribute 数据</el-divider>
-                <pre><code>{{ attribute }}</code></pre>
-            </el-col>
-            <el-col :span="12">
-                <el-divider content-position="left">sku 数据</el-divider>
-                <pre><code>{{ sku }}</code></pre>
-            </el-col>
-        </el-row>
-    </div>
+  <div>
+    <SkuForm
+        :source-attribute="sourceAttribute"
+        :source-package="sourcePackage"
+        v-model:attribute="attribute"
+        v-model:sku="sku"
+    />
+    <el-row :gutter="20">
+      <el-col :span="8">
+        <el-divider content-position="left">attribute 数据</el-divider>
+        <pre><code>{{ attribute }}</code></pre>
+      </el-col>
+      <el-col :span="8">
+        <el-divider content-position="left">sku 数据</el-divider>
+        <pre><code>{{ sku }}</code></pre>
+      </el-col>
+      <el-col :span="8">
+        <el-divider content-position="left">package 数据</el-divider>
+        <pre><code>{{ pkg }}</code></pre>
+      </el-col>
+    </el-row>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {ref} from 'vue'
 import SkuForm from '../components/SkuForm.vue'
 
+const sourcePackage = ref([
+  {
+    "unit": "天", // 租期单位
+    "checked": false, // 租期单位
+    "name": "租完归还",  // 租期名称
+    "buyout_mode": 1, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
+    "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
+    "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
+    "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
+    "relet_coefficient": "1", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+    "rent_duration": [ // 可租赁时间列表
+      90, 180, 365
+    ]
+  },
+  {
+    "checked": false,
+    "unit": "天", // 租期单位
+    "name": "灵活租",  // 租期名称
+    "buyout_mode": 1, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
+    "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
+    "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
+    "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
+    "relet_coefficient": "1", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+    "rent_duration": [ // 可租赁时间列表
+      180, 365
+    ]
+  }
+])
+
+const pkg = ref([
+  {
+    "unit": "天", // 租期单位
+    "checked": false, // 租期单位
+    "name": "租完归还",  // 租期名称
+    "buyout_mode": 2, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
+    "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
+    "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
+    "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
+    "relet_coefficient": "1.5", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+    "rent_duration": [ // 可租赁时间列表
+      90, 365
+    ]
+  }
+])
+
 const sourceAttribute = ref([
-    {
-        name: '颜色',
-        item: ['黑', '金', '白']
-    },
-    {
-        name: '内存',
-        item: ['16G', '32G']
-    }
+  {
+    name: '颜色',
+    item: ['黑', '金', '白']
+  },
+  {
+    name: '内存',
+    item: ['16G', '32G']
+  }
 ])
 const attribute = ref([])
 const sku = ref([])
