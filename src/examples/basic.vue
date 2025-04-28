@@ -1,10 +1,11 @@
 <template>
   <div>
     <SkuForm
-        :source-attribute="sourceAttribute"
-        :source-package="sourcePackage"
         v-model:attribute="attribute"
+        :source-attribute="sourceAttribute"
+        :structure="structure"
         v-model:sku="sku"
+        :source-package="sourcePackage"
     />
     <el-row :gutter="20">
       <el-col :span="8">
@@ -56,21 +57,7 @@ const sourcePackage = ref([
   }
 ])
 
-const pkg = ref([
-  {
-    "unit": "天", // 租期单位
-    "checked": false, // 租期单位
-    "name": "租完归还",  // 租期名称
-    "buyout_mode": 2, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
-    "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
-    "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
-    "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
-    "relet_coefficient": "1.5", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
-    "rent_duration": [ // 可租赁时间列表
-      90, 365
-    ]
-  }
-])
+const pkg = ref([])
 
 const sourceAttribute = ref([
   {
@@ -82,6 +69,46 @@ const sourceAttribute = ref([
     item: ['16G', '32G']
   }
 ])
-const attribute = ref([])
-const sku = ref([])
+const attribute = ref([
+  {
+    name: '颜色',
+    item: ['黑', '金']
+  },
+  {
+    name: '内存',
+    item: ['16G']
+  }
+])
+const structure = ref([
+  {
+    name: 'originalprice',
+    type: 'input',
+    label: '原价'
+  },
+  {
+    name: 'price',
+    type: 'input',
+    label: '现价'
+  },
+  {
+    name: 'stock',
+    type: 'input',
+    label: '库存'
+  }
+])
+
+const sku = ref([
+  {
+    "sku": "黑;16G",
+    "originalprice": 100,
+    "price": 80,
+    "stock": 100
+  },
+  {
+    "sku": "金;16G",
+    "originalprice": 100,
+    "price": 85,
+    "stock": 50
+  }
+])
 </script>
