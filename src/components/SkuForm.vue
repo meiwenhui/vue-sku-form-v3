@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{ form.skuData }}
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
       <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="sku-form-section">
         <div style="display: flex;align-items: center;">
@@ -32,7 +33,7 @@
           <div class="sku-form-tags-box">
             租期：
             <el-select
-                v-model="seleted[pkgItem.rent_mode]"
+                v-model="pkgItem.selected_rent_duration"
                 multiple
                 placeholder="请选择租期"
                 @change="onSelectedChange(pkgItem)"
@@ -168,48 +169,10 @@
 
 
             <!-- pkg -->
-            <el-table-column
-                v-for="(col, colIndex) in structure.package?.duration_price_list"
-                :key="colIndex"
-                :label="`${col.duration}${structure.package.unit}`"
-                align="center"
-            >
-              <template #header>
-                <div class="sku-form-batch">
-                  <el-input v-model="batch[col.duration]" :placeholder="`统一设置${col.duration}${structure.package.unit}`" size="small">
-                    <template #append>
-                      <el-button @click="onBatchSet(col.duration)">批量设置</el-button>
-                    </template>
-                  </el-input>
-                </div>
-              </template>
-
+            <el-table-column>
+              <template #header>debug</template>
               <template #default="{ row, $index }">
-                <div v-if="col.type === 'slot'">
-                  <slot :index="$index" :name="col.name" :row="row"/>
-                </div>
-                <el-form-item
-                    v-else
-                    :class="`sku-form-${$index}-${col.duration}`"
-                    :prop="`skuData.${$index}.${col.duration}`"
-                >
-                  <el-tooltip
-                      v-if="col.tips"
-                      :content="col.tips"
-                      :hide-after="0"
-                      placement="top"
-                  >
-                    <el-icon class="sku-form-tips">
-                      <InfoFilled/>
-                    </el-icon>
-                  </el-tooltip>
-                  <el-input
-                      v-model="row[col.duration]"
-                      :disabled="col.disabled"
-                      :placeholder="col.placeholder"
-                      size="small"
-                  />
-                </el-form-item>
+                {{ $index }} / {{ row }}
               </template>
             </el-table-column>
 
@@ -329,7 +292,6 @@ const inputValues = ref([])
 // 数据
 const form = reactive({
   skuData: [],
-  packageData: [],
 })
 
 // 批量设置暂存数据
@@ -343,8 +305,6 @@ const myPackage = ref([])
 
 // 用于管理checkbox组的选中状态
 const checked = ref([])
-
-const seleted = ref([])
 
 // 计算规则
 const rules = computed(() => {
@@ -391,7 +351,7 @@ const emitPackage = computed(() => {
   return myPackage.value.filter(pkg => pkg.checked).map(item => {
     return {
       rent_mode: item.rent_mode,
-      rent_duration: seleted.value[item.rent_mode] ?? []
+      rent_duration: pkg.selected_rent_duration ?? []
     };
   }).filter(f => f.rent_duration.length > 0);
 })
@@ -490,18 +450,34 @@ const init = () => {
           temp.rent_duration.push(itemValue)
         }
       })
-
       newMyPackage.push(temp)
     })
 
     // 初始化输入值数组
     // inputValues.value = Array(sourcePackage.value.length).fill('');
-
+    console.log('pkg.value.forEach -> newMyPackage.forEach', pkg.value, newMyPackage)
     // 根据 attribute 更新 myAttribute，处理已选中的属性
     pkg.value.forEach(attrVal => {
       newMyPackage.forEach(myPackageVal => {
+
         if (attrVal.rent_mode === myPackageVal.rent_mode) {
 
+          let newRentDuration = [...new Set([...myPackageVal.rent_duration, ...attrVal.rent_duration])]
+          Object.assign(myPackageVal, attrVal)
+
+          myPackageVal.rent_duration = newRentDuration
+          myPackageVal.checked = true
+          attrVal.rent_duration.forEach(attrItem => {
+            // 查找匹配的属性项
+            const existingItem = myPackageVal.rent_duration.find(myAttrItem => myAttrItem === attrItem);
+            if (existingItem) {
+              // 如果找到匹配项，标记为选中
+              myPackageVal.selected_rent_duration.push(attrItem)
+            } else {
+              // 如果没找到，添加新项
+              myPackageVal.rent_duration.push(attrItem)
+            }
+          });
         }
       });
     });
@@ -574,25 +550,6 @@ watch(myAttribute, () => {
   })
 }, {deep: true})
 
-// 监听选中属性的变化
-watch(seleted, () => {
-  if (!isInit.value) {
-    // 更新父组件
-    emit('update:package', emitPackage.value)
-  }
-  // 解决通过 $emit 更新后无法拿到 package 最新数据的问题
-  nextTick(() => {
-    if (emitPackage.value.length !== 0) {
-      combinationPackage()
-    } else {
-      form.packageData = []
-      const obj = {}
-
-      form.packageData.push(obj)
-    }
-    clearValidate()
-  })
-}, {deep: true})
 
 // 监听skuData变化
 watch(() => form.skuData, (newValue, oldValue) => {
@@ -624,9 +581,10 @@ watch(() => form.skuData, (newValue, oldValue) => {
 // 组合属性，生成SKU表格数据
 const combinationAttribute = (index = 0, dataTemp = []) => {
   if (index === 0) {
+    console.log('combinationAttribute.emitAttribute.index.0', emitAttribute.value)
     for (let i = 0; i < emitAttribute.value[0].item.length; i++) {
-      const attrItem = emitAttribute.value[0].item[i];
-      const attrName = attrItem.name;
+      const attrItem = emitAttribute.value[0].item[i]; // {"name" : "黑"}
+      const attrName = attrItem.name; // 黑
 
       const obj = {
         sku: attrName,
@@ -676,8 +634,12 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
   } else {
     if (!isInit.value || isAsync.value) {
       // 将原有的 sku 数据和新的 sku 数据比较，相同的 sku 则把原有的 sku 数据覆盖到新的 sku 数据里
+
+      console.log('combinationAttribute.form', form.skuData.length, dataTemp.length)
+
       for (let i = 0; i < form.skuData.length; i++) {
         for (let j = 0; j < dataTemp.length; j++) {
+          console.log('combinationAttribute.form.skuData', form.skuData[i].sku, dataTemp[j].sku)
           if (form.skuData[i].sku === dataTemp[j].sku) {
             // 保留原SKU数据中的属性值
             structure.value.forEach(structureItem => {
@@ -1000,5 +962,7 @@ defineExpose({
   object-fit: cover;
   border-radius: 2px;
 }
+
+
 </style>
 
