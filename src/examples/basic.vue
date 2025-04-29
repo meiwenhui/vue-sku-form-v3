@@ -34,10 +34,10 @@ const sourcePackage = ref([
     "checked": false, // 租期单位
     "name": "租完归还",  // 租期名称
     "buyout_mode": 1, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
-    "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
+    "is_relet": 0,// 是否可续租； 可选：0：不可续租；1：可续租
     "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
     "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
-    "relet_coefficient": "1", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+    "relet_coefficient": 1, // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
     "rent_duration": [ // 可租赁时间列表
       90, 180, 365
     ]
@@ -50,7 +50,7 @@ const sourcePackage = ref([
     "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
     "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
     "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
-    "relet_coefficient": "1", // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+    "relet_coefficient": 1, // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
     "rent_duration": [ // 可租赁时间列表
       180, 365
     ]
@@ -102,13 +102,45 @@ const sku = ref([
     "sku": "黑;16G",
     "originalprice": 100,
     "price": 80,
-    "stock": 100
+    "stock": 100,
+    "package": {
+      "unit": "天",
+      "name": "租完归还",
+      "buyout_mode": 1,
+      "is_relet": 0,
+      "rent_mode": 2,
+      "buyout_discount": 100,
+      "relet_coefficient": 1,
+      "duration_price_list": [
+        {
+          "duration": 365,
+          "total_sale_price": 330000,
+          "total_original_price": 0
+        }
+      ]
+    }
   },
   {
     "sku": "金;16G",
     "originalprice": 100,
     "price": 85,
-    "stock": 50
+    "stock": 50,
+    "package": {
+      "unit": "天",
+      "name": "租完归还",
+      "buyout_mode": 1,
+      "is_relet": 0,
+      "rent_mode": 2,
+      "buyout_discount": 100,
+      "relet_coefficient": 1,
+      "duration_price_list": [
+        {
+          "duration": 365,
+          "total_sale_price": 330000,
+          "total_original_price": 0
+        }
+      ]
+    }
   }
 ])
 </script>

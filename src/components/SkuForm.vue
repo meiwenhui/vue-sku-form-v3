@@ -1,6 +1,54 @@
 <template>
   <div>
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
+      <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="sku-form-section">
+        <div style="display: flex;align-items: center;">
+          <el-checkbox-group v-model="pkgItem.checked">
+            <el-checkbox value="1"/>
+          </el-checkbox-group>
+          <div class="sku-form-title">{{ pkgItem.name }}</div>
+        </div>
+        <view v-if="pkgItem.checked">
+          <div class="sku-form-tags-box">
+            买断模式:
+            <el-radio-group v-model="pkgItem.buyout_mode">
+              <el-radio :value="0">不可买断</el-radio>
+              <el-radio :value="1">提前买断</el-radio>
+              <el-radio :value="2">到期买断</el-radio>
+            </el-radio-group>
+          </div>
+          <div class="sku-form-tags-box" v-if="pkgItem.buyout_mode != 0">
+            买断折扣：
+            <el-input-number v-model="pkgItem.buyout_discount" :min="1" :max="100"/>
+          </div>
+          <div class="">
+            是否可续租：
+            <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
+          </div>
+          <div class="sku-form-tags-box" v-if="pkgItem.is_relet">
+            续租系数：
+            <el-input-number v-model="pkgItem.relet_coefficient" :min="1" :max="2"/>
+          </div>
+          <div class="sku-form-tags-box">
+            租期：
+            <el-select
+                v-model="seleted[pkgItem.rent_mode]"
+                multiple
+                placeholder="请选择租期"
+                @change="onSelectedChange(pkgItem)"
+            >
+              <el-option
+                  v-for="duration in pkgItem.rent_duration"
+                  :key="duration"
+                  :label="`${duration}${pkgItem.unit}`"
+                  :value="duration"
+              />
+            </el-select>
+          </div>
+        </view>
+      </div>
+
+
       <div v-for="(attrItem, attrIndex) in myAttribute" :key="attrIndex" class="sku-form-section">
         <div class="sku-form-title">{{ attrItem.name }}</div>
         <div class="sku-form-tags-box">
@@ -9,7 +57,7 @@
                 v-for="(item, index) in attrItem.item"
                 :key="index"
                 :disabled="disabled"
-                :label="item.name"
+                :value="item.name"
                 @change="checked => onCheckedChange(attrIndex, index, checked)"
             >
               <div class="sku-checkbox-content">
@@ -46,77 +94,132 @@
         :rules="rules"
         class="sku-form-table"
     >
-      <el-table
-          :key="form.skuData.length"
-          :data="form.skuData"
-          border
-          style="width: 100%"
-      >
-        <el-table-column
-            v-for="(col, colIndex) in emitAttribute"
-            :key="colIndex"
-            :label="col.name"
-            align="center"
-        >
-          <template #default="{ row }">
-            <div class="sku-table-cell">
-              <img
-                  v-if="getAttributeImage(col.name, row[col.name])"
-                  :src="getAttributeImage(col.name, row[col.name])"
-                  class="sku-table-image"
-              />
-              <span>{{ row[col.name] }}</span>
-            </div>
-          </template>
-        </el-table-column>
-
-        <el-table-column
-            v-for="(col, colIndex) in structure"
-            :key="colIndex"
-            :label="col.label"
-            align="center"
-        >
-          <template v-if="col.batch !== false && col.type === 'input' && isBatch" #header>
-            <div class="sku-form-batch">
-              <el-input v-model="batch[col.name]" :placeholder="`统一设置${col.label}`" size="small">
-                <template #append>
-                  <el-button @click="onBatchSet(col.name)">批量设置</el-button>
-                </template>
-              </el-input>
-            </div>
-          </template>
-
-          <template #default="{ row, $index }">
-            <div v-if="col.type === 'slot'">
-              <slot :index="$index" :name="col.name" :row="row"/>
-            </div>
-            <el-form-item
-                v-else
-                :class="`sku-form-${$index}-${col.name}`"
-                :prop="`skuData.${$index}.${col.name}`"
+      <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="sku-form-section">
+        <template v-if="pkgItem.checked">
+          <h4>{{ pkgItem.name }}</h4>
+          <el-table
+              :key="form.skuData.length"
+              :data="form.skuData"
+              border
+              style="width: 100%"
+          >
+            <el-table-column
+                v-for="(col, colIndex) in emitAttribute"
+                :key="colIndex"
+                :label="col.name"
+                align="center"
             >
-              <el-tooltip
-                  v-if="col.tips"
-                  :content="col.tips"
-                  :hide-after="0"
-                  placement="top"
-              >
-                <el-icon class="sku-form-tips">
-                  <InfoFilled/>
-                </el-icon>
-              </el-tooltip>
-              <el-input
-                  v-model="row[col.name]"
-                  :disabled="col.disabled"
-                  :placeholder="col.placeholder"
-                  size="small"
-              />
-            </el-form-item>
-          </template>
-        </el-table-column>
-      </el-table>
+              <template #default="{ row }">
+                <div class="sku-table-cell">
+                  <img
+                      v-if="getAttributeImage(col.name, row[col.name])"
+                      :src="getAttributeImage(col.name, row[col.name])"
+                      class="sku-table-image"
+                  />
+                  <span>{{ row[col.name] }}</span>
+                </div>
+              </template>
+            </el-table-column>
+
+            <el-table-column
+                v-for="(col, colIndex) in structure"
+                :key="colIndex"
+                :label="col.label"
+                align="center"
+            >
+              <template v-if="col.batch !== false && col.type === 'input' && isBatch" #header>
+                <div class="sku-form-batch">
+                  <el-input v-model="batch[col.name]" :placeholder="`统一设置${col.label}`" size="small">
+                    <template #append>
+                      <el-button @click="onBatchSet(col.name)">批量设置</el-button>
+                    </template>
+                  </el-input>
+                </div>
+              </template>
+
+              <template #default="{ row, $index }">
+                <div v-if="col.type === 'slot'">
+                  <slot :index="$index" :name="col.name" :row="row"/>
+                </div>
+                <el-form-item
+                    v-else
+                    :class="`sku-form-${$index}-${col.name}`"
+                    :prop="`skuData.${$index}.${col.name}`"
+                >
+                  <el-tooltip
+                      v-if="col.tips"
+                      :content="col.tips"
+                      :hide-after="0"
+                      placement="top"
+                  >
+                    <el-icon class="sku-form-tips">
+                      <InfoFilled/>
+                    </el-icon>
+                  </el-tooltip>
+                  <el-input
+                      v-model="row[col.name]"
+                      :disabled="col.disabled"
+                      :placeholder="col.placeholder"
+                      size="small"
+                  />
+                </el-form-item>
+              </template>
+            </el-table-column>
+
+
+            <!-- pkg -->
+            <el-table-column
+                v-for="(col, colIndex) in structure.package?.duration_price_list"
+                :key="colIndex"
+                :label="`${col.duration}${structure.package.unit}`"
+                align="center"
+            >
+              <template #header>
+                <div class="sku-form-batch">
+                  <el-input v-model="batch[col.duration]" :placeholder="`统一设置${col.duration}${structure.package.unit}`" size="small">
+                    <template #append>
+                      <el-button @click="onBatchSet(col.duration)">批量设置</el-button>
+                    </template>
+                  </el-input>
+                </div>
+              </template>
+
+              <template #default="{ row, $index }">
+                <div v-if="col.type === 'slot'">
+                  <slot :index="$index" :name="col.name" :row="row"/>
+                </div>
+                <el-form-item
+                    v-else
+                    :class="`sku-form-${$index}-${col.duration}`"
+                    :prop="`skuData.${$index}.${col.duration}`"
+                >
+                  <el-tooltip
+                      v-if="col.tips"
+                      :content="col.tips"
+                      :hide-after="0"
+                      placement="top"
+                  >
+                    <el-icon class="sku-form-tips">
+                      <InfoFilled/>
+                    </el-icon>
+                  </el-tooltip>
+                  <el-input
+                      v-model="row[col.duration]"
+                      :disabled="col.disabled"
+                      :placeholder="col.placeholder"
+                      size="small"
+                  />
+                </el-form-item>
+              </template>
+            </el-table-column>
+
+
+          </el-table>
+        </template>
+      </div>
     </el-form>
   </div>
+  {{ emitPackage }}
 </template>
 
 <script setup>
@@ -145,6 +248,15 @@ const props = defineProps({
    * ]
    */
   attribute: {
+    type: Array,
+    default: () => []
+  },
+
+  sourcePackage: {
+    type: Array,
+    default: () => []
+  },
+  pkg: {
     type: Array,
     default: () => []
   },
@@ -202,10 +314,10 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:attribute', 'update:sku', 'validate'])
+const emit = defineEmits(['update:package', 'update:attribute', 'update:sku', 'validate'])
 
 // 使用toRefs优化props解构，保持响应性
-const {sourceAttribute, attribute, sku, structure, separator, emptySku, async: isAsync, canAddAttribute} = toRefs(props)
+const {sourceAttribute, attribute, sourcePackage, pkg, sku, structure, separator, emptySku, async: isAsync, canAddAttribute} = toRefs(props)
 
 // 表单引用
 const formRef = ref(null)
@@ -216,7 +328,8 @@ const inputValues = ref([])
 
 // 数据
 const form = reactive({
-  skuData: []
+  skuData: [],
+  packageData: [],
 })
 
 // 批量设置暂存数据
@@ -225,8 +338,13 @@ const batch = reactive({})
 // 属性数据(包含选中状态)
 const myAttribute = ref([])
 
+// 套餐数据(包含选中状态)
+const myPackage = ref([])
+
 // 用于管理checkbox组的选中状态
 const checked = ref([])
+
+const seleted = ref([])
 
 // 计算规则
 const rules = computed(() => {
@@ -261,12 +379,21 @@ const emitAttribute = computed(() => {
           const {checked, ...itemDetail} = item;
           return itemDetail;
         });
-
+    console.log('emitAttribute.itemDetail', selectedItems)
     return {
       name: attr.name,
       item: selectedItems
     };
   }).filter(attr => attr.item.length > 0);
+})
+
+const emitPackage = computed(() => {
+  return myPackage.value.filter(pkg => pkg.checked).map(item => {
+    return {
+      rent_mode: item.rent_mode,
+      rent_duration: seleted.value[item.rent_mode] ?? []
+    };
+  }).filter(f => f.rent_duration.length > 0);
 })
 
 // 初始化方法
@@ -334,6 +461,55 @@ const init = () => {
 
     myAttribute.value = newMyAttribute
 
+
+    // ----------------------------------------------------------------------------------------------------
+    // 初始化 myPackage
+    const newMyPackage = []
+    // 根据 sourcePackage 复原 myPackage 的结构
+    sourcePackage.value.forEach(v => {
+      const temp = {
+        unit: v.unit,
+        name: v.name,
+        buyout_mode: v.buyout_mode,
+        is_relet: v.is_relet,
+        rent_mode: v.rent_mode,
+        buyout_discount: v.buyout_discount,
+        relet_coefficient: v.relet_coefficient,
+        rent_duration: [],
+        selected_rent_duration: [],
+        addDuration: false,
+      }
+
+      // 处理规格项，支持字符串或对象格式
+      v.rent_duration.forEach(itemValue => {
+        if (typeof itemValue === 'string') {
+          // 处理字符串类型的规格项（向后兼容）
+          temp.rent_duration.push(itemValue)
+        } else {
+          // 处理对象类型的规格项（新格式）
+          temp.rent_duration.push(itemValue)
+        }
+      })
+
+      newMyPackage.push(temp)
+    })
+
+    // 初始化输入值数组
+    // inputValues.value = Array(sourcePackage.value.length).fill('');
+
+    // 根据 attribute 更新 myAttribute，处理已选中的属性
+    pkg.value.forEach(attrVal => {
+      newMyPackage.forEach(myPackageVal => {
+        if (attrVal.rent_mode === myPackageVal.rent_mode) {
+
+        }
+      });
+    });
+
+    myPackage.value = newMyPackage
+    // ----------------------------------------------------------------------------------------------------
+
+
     // 因为 skuData 是实时监听 myAttribute 变化并自动生成，使用微任务确保已生成
     nextTick(() => {
       sku.value.forEach(skuItem => {
@@ -398,6 +574,26 @@ watch(myAttribute, () => {
   })
 }, {deep: true})
 
+// 监听选中属性的变化
+watch(seleted, () => {
+  if (!isInit.value) {
+    // 更新父组件
+    emit('update:package', emitPackage.value)
+  }
+  // 解决通过 $emit 更新后无法拿到 package 最新数据的问题
+  nextTick(() => {
+    if (emitPackage.value.length !== 0) {
+      combinationPackage()
+    } else {
+      form.packageData = []
+      const obj = {}
+
+      form.packageData.push(obj)
+    }
+    clearValidate()
+  })
+}, {deep: true})
+
 // 监听skuData变化
 watch(() => form.skuData, (newValue, oldValue) => {
   if (!isInit.value || (newValue.length === 1 && newValue[0].sku === emptySku.value)) {
@@ -445,6 +641,7 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
           obj[v.name] = typeof v.defaultValue !== 'undefined' ? v.defaultValue : '';
         }
       });
+      console.log('combinationAttribute.obj', obj)
 
       dataTemp.push(obj);
     }
@@ -498,6 +695,16 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
     }
     form.skuData = dataTemp;
   }
+}
+
+const combinationPackage = (index = 0, dataTemp = []) => {
+  if (index === 0) {
+
+  } else {
+
+  }
+
+
 }
 
 // 查找属性的详细信息
@@ -651,6 +858,10 @@ watch(() => myAttribute.value, () => {
 const onCheckedChange = (attrIndex, itemIndex, isChecked) => {
   // 更新原始item的checked状态
   myAttribute.value[attrIndex].item[itemIndex].checked = isChecked
+}
+
+const onSelectedChange = (pkgItem) => {
+  console.log(pkgItem)
 }
 
 // 暴露方法
