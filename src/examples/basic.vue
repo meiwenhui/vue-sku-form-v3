@@ -4,10 +4,16 @@
         v-model:attribute="attribute"
         :source-attribute="sourceAttribute"
         :structure="structure"
-        v-model:sku="sku"
+        v-model:sku.sync="sku"
         :source-package="sourcePackage"
         :pkg="pkg"
-    />
+    >
+      <template #status="slotProps">
+        <div>
+          <el-switch v-model="slotProps.row.status" :active-value="1" :inactive-value="0"/>
+        </div>
+      </template>
+    </SkuForm>
     <el-row :gutter="20">
       <el-col :span="8">
         <el-divider content-position="left">attribute 数据</el-divider>
@@ -107,6 +113,12 @@ const attribute = ref([
 ])
 const structure = ref([
   {
+    name: 'status',
+    type: 'slot',
+    defaultValue: 0,
+    label: '状态'
+  },
+  {
     name: 'originalprice',
     type: 'input',
     label: '原价'
@@ -120,7 +132,7 @@ const structure = ref([
     name: 'stock',
     type: 'input',
     label: '库存'
-  }
+  },
 ])
 
 const sku = ref([

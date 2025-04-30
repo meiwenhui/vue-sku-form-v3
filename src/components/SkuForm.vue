@@ -18,17 +18,17 @@
               <el-radio :value="2">到期买断</el-radio>
             </el-radio-group>
           </div>
-          <div class="sku-form-tags-box" v-if="pkgItem.buyout_mode != 0">
+          <div v-if="pkgItem.buyout_mode != 0" class="sku-form-tags-box">
             买断折扣：
-            <el-input-number v-model="pkgItem.buyout_discount" :min="1" :max="100"/>
+            <el-input-number v-model="pkgItem.buyout_discount" :max="100" :min="1"/>
           </div>
           <div class="">
             是否可续租：
             <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
           </div>
-          <div class="sku-form-tags-box" v-if="pkgItem.is_relet">
+          <div v-if="pkgItem.is_relet" class="sku-form-tags-box">
             续租系数：
-            <el-input-number v-model="pkgItem.relet_coefficient" :min="1" :max="2"/>
+            <el-input-number v-model="pkgItem.relet_coefficient" :max="2" :min="1"/>
           </div>
           <div class="sku-form-tags-box">
             租期：
@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, reactive, ref, toRefs, watch} from 'vue'
+import {computed, nextTick, onMounted, reactive, ref, toRefs, watch} from 'vue'
 import {InfoFilled, Plus} from '@element-plus/icons-vue'
 import {ElMessage} from 'element-plus'
 
@@ -305,6 +305,7 @@ const myPackage = ref([])
 
 // 用于管理checkbox组的选中状态
 const checked = ref([])
+
 
 // 计算规则
 const rules = computed(() => {
@@ -487,7 +488,8 @@ const init = () => {
 
 
     // 因为 skuData 是实时监听 myAttribute 变化并自动生成，使用微任务确保已生成
-    nextTick(() => {
+    setTimeout(() => {
+      console.log('开始复原SKU数据.....')
       sku.value.forEach(skuItem => {
         form.skuData.forEach(skuDataItem => {
           if (skuItem.sku === skuDataItem.sku) {
@@ -498,7 +500,7 @@ const init = () => {
         })
       })
       isInit.value = false
-    })
+    }, 0)
   })
 }
 
@@ -513,16 +515,13 @@ const getAttributeImage = (attrName, attrValue) => {
   return attrItem?.image || null;
 }
 
-// 初始化属性
-watch(
-    attribute,
-    () => {
-      if (!isAsync.value) {
-        init()
-      }
-    },
-    {immediate: true, deep: true}
-)
+onMounted(() => {
+  console.log('初始化', isAsync.value)
+  if (!isAsync.value) {
+    init()
+  }
+})
+
 
 // 监听选中属性的变化
 watch(myAttribute, () => {
