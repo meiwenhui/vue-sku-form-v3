@@ -1,5 +1,7 @@
 <template>
   <div>
+    {{ pkg }}
+    <hr/>
     {{ form.skuData }}
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
       <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="sku-form-section">
@@ -104,6 +106,7 @@
               border
               style="width: 100%"
           >
+            <el-table-column prop="sku" label="SKU"></el-table-column>
             <el-table-column
                 v-for="(col, colIndex) in emitAttribute"
                 :key="colIndex"
@@ -169,6 +172,18 @@
 
 
             <!-- pkg -->
+            <el-table-column
+                v-for="(aa, dIndex) in pkg"
+                :key="dIndex"
+                align="center"
+            >
+              <template #header>b</template>
+              <template #default="{ row, $index }">
+                a
+              </template>
+            </el-table-column>
+
+
             <el-table-column>
               <template #header>debug</template>
               <template #default="{ row, $index }">
@@ -182,7 +197,6 @@
       </div>
     </el-form>
   </div>
-  {{ emitPackage }}
 </template>
 
 <script setup>
@@ -349,12 +363,7 @@ const emitAttribute = computed(() => {
 })
 
 const emitPackage = computed(() => {
-  return myPackage.value.filter(pkg => pkg.checked).map(item => {
-    return {
-      rent_mode: item.rent_mode,
-      rent_duration: pkg.selected_rent_duration ?? []
-    };
-  }).filter(f => f.rent_duration.length > 0);
+  return myPackage.value.filter(f => f.rent_duration.length > 0);
 })
 
 // 初始化方法
@@ -581,27 +590,37 @@ watch(() => form.skuData, (newValue, oldValue) => {
 const combinationAttribute = (index = 0, dataTemp = []) => {
   if (index === 0) {
     console.log('combinationAttribute.emitAttribute.index.0', emitAttribute.value)
+    let obj = {};
     for (let i = 0; i < emitAttribute.value[0].item.length; i++) {
       const attrItem = emitAttribute.value[0].item[i]; // {"name" : "黑"}
       const attrName = attrItem.name; // 黑
-
-      const obj = {
+      obj = {
         sku: attrName,
-        [emitAttribute.value[0].name]: attrName,
         skuData: {  // 存储完整的SKU对象数据
           [emitAttribute.value[0].name]: attrItem
         }
       };
-
       structure.value.forEach(v => {
         if (!(v.type === 'slot' && v.skuProperty === false)) {
           obj[v.name] = typeof v.defaultValue !== 'undefined' ? v.defaultValue : '';
         }
       });
       console.log('combinationAttribute.obj', obj)
-
-      dataTemp.push(obj);
     }
+
+    // ---------
+    console.log('mwh', emitPackage.value)
+    for (let i = 0; i < emitPackage.value[0].rent_duration.length; i++) {
+      const pkgItem = emitPackage.value[0];
+      obj.pkg = {
+        ...pkgItem
+      };
+      pkg.value.forEach(v => {
+        obj.pkg[v.name] = typeof v.defaultValue !== 'undefined' ? v.defaultValue : '';
+      });
+      console.log('combinationAttribute.obj', obj)
+    }
+    dataTemp.push(obj);
   } else {
     const temp = [];
     for (let i = 0; i < dataTemp.length; i++) {
@@ -611,7 +630,7 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
         const newItem = JSON.parse(JSON.stringify(dataTemp[i]));
 
         // 添加新的属性名称
-        newItem[emitAttribute.value[index].name] = attrName;
+        // newItem[emitAttribute.value[index].name] = attrName;
 
         // 更新SKU编码
         newItem['sku'] = [newItem['sku'], attrName].join(separator.value);

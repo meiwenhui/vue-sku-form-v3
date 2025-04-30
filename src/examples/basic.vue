@@ -46,7 +46,7 @@ const sourcePackage = ref([
     "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
     "relet_coefficient": 1, // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
     "rent_duration": [ // 可租赁时间列表
-      365
+      180, 365
     ]
   },
   {
@@ -75,18 +75,6 @@ const pkg = ref([
     "relet_coefficient": 1.5,
     "rent_duration": [
       90, 365
-    ]
-  },
-  {
-    "unit": "天",
-    "name": "随租随还",
-    "buyout_mode": 1,
-    "is_relet": 0,
-    "rent_mode": 3,
-    "buyout_discount": 95,
-    "relet_coefficient": 0,
-    "rent_duration": [
-      365
     ]
   }
 ])
@@ -141,6 +129,7 @@ const sku = ref([
     "originalprice": 200,
     "price": 82,
     "stock": 200,
+    "status": 0,
     'spec': [
       {
         "attr_key": "颜色",
@@ -151,7 +140,7 @@ const sku = ref([
         "attr_value": "16G"
       },
     ],
-    "package": {
+    "pkg": {
       "unit": "天",
       "name": "租完归还",
       "buyout_mode": 1,
@@ -173,37 +162,5 @@ const sku = ref([
       ]
     }
   },
-  {
-    "sku": "黑;16G",
-    "originalprice": 100,
-    "price": 85,
-    "stock": 50,
-    'spec': [
-      {
-        "attr_key": "颜色",
-        "attr_value": "黑"
-      },
-      {
-        "attr_key": "内存",
-        "attr_value": "16G"
-      },
-    ],
-    "package": {
-      "unit": "天",
-      "name": "随租随还",
-      "buyout_mode": 1,
-      "is_relet": 0,
-      "rent_mode": 3,
-      "buyout_discount": 100,
-      "relet_coefficient": 1,
-      "duration_price_list": [
-        {
-          "duration": 365,
-          "total_sale_price": 3300,
-          "total_rent_price": 2300
-        }
-      ]
-    }
-  }
 ])
 </script>
