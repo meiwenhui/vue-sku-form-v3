@@ -151,12 +151,10 @@ const sku = ref([
       "duration_price_list": [
         {
           "duration": 365,
-          "total_sale_price": 3100,
           "total_rent_price": 2200
         },
         {
           "duration": 90,
-          "total_sale_price": 1200,
           "total_rent_price": 2400
         }
       ]

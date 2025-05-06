@@ -1,93 +1,112 @@
 <template>
   <div>
-    {{ pkg }}
-    <hr/>
-    {{ form.skuData }}
+    <el-card>
+      {{ myAttribute }}
+    </el-card>
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
-      <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="sku-form-section">
-        <div style="display: flex;align-items: center;">
-          <el-checkbox-group v-model="pkgItem.checked">
-            <el-checkbox value="1"/>
-          </el-checkbox-group>
-          <div class="sku-form-title">{{ pkgItem.name }}</div>
-        </div>
-        <view v-if="pkgItem.checked">
-          <div class="sku-form-tags-box">
-            买断模式:
-            <el-radio-group v-model="pkgItem.buyout_mode">
-              <el-radio :value="0">不可买断</el-radio>
-              <el-radio :value="1">提前买断</el-radio>
-              <el-radio :value="2">到期买断</el-radio>
-            </el-radio-group>
-          </div>
-          <div v-if="pkgItem.buyout_mode != 0" class="sku-form-tags-box">
-            买断折扣：
-            <el-input-number v-model="pkgItem.buyout_discount" :max="100" :min="1"/>
-          </div>
-          <div class="">
-            是否可续租：
-            <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
-          </div>
-          <div v-if="pkgItem.is_relet" class="sku-form-tags-box">
-            续租系数：
-            <el-input-number v-model="pkgItem.relet_coefficient" :max="2" :min="1"/>
-          </div>
-          <div class="sku-form-tags-box">
-            租期：
-            <el-select
-                v-model="pkgItem.selected_rent_duration"
-                multiple
-                placeholder="请选择租期"
-                @change="onSelectedChange(pkgItem)"
-            >
-              <el-option
-                  v-for="duration in pkgItem.rent_duration"
-                  :key="duration"
-                  :label="`${duration}${pkgItem.unit}`"
-                  :value="duration"
+      <el-card style="margin-bottom: 20px">
+        <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="" style="display: flex;flex-flow: column;margin-bottom: 30px">
+          <div style="display: flex;align-items: center;">
+            <el-checkbox-group v-model="pkgItem.checked">
+              <el-checkbox value="1"/>
+            </el-checkbox-group>
+            <div class="sku-form-title">
+              <el-input
+                  v-model="pkgItem.name"
+                  placeholder="请输入规格名称"
               />
-            </el-select>
+            </div>
           </div>
-        </view>
-      </div>
-
-
-      <div v-for="(attrItem, attrIndex) in myAttribute" :key="attrIndex" class="sku-form-section">
-        <div class="sku-form-title">{{ attrItem.name }}</div>
-        <div class="sku-form-tags-box">
-          <el-checkbox-group v-model="checked[attrIndex]" :disabled="disabled" class="checkbox-group">
-            <el-checkbox
-                v-for="(item, index) in attrItem.item"
-                :key="index"
-                :disabled="disabled"
-                :value="item.name"
-                @change="checked => onCheckedChange(attrIndex, index, checked)"
-            >
-              <div class="sku-checkbox-content">
-                <img
-                    v-if="item.image"
-                    :alt="item.name"
-                    :src="item.image"
-                    class="sku-option-image"
+          <view v-if="pkgItem.checked" style="display: flex;justify-content: space-between">
+            <div>
+              买断模式:
+              <el-radio-group v-model="pkgItem.buyout_mode">
+                <el-radio :value="0">不可买断</el-radio>
+                <el-radio :value="1">提前买断</el-radio>
+                <el-radio :value="2">到期买断</el-radio>
+              </el-radio-group>
+            </div>
+            <div v-if="pkgItem.buyout_mode != 0">
+              买断折扣：
+              <el-input-number v-model="pkgItem.buyout_discount" :max="100" :min="1"/>
+            </div>
+            <div>
+              是否可续租：
+              <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
+            </div>
+            <div v-if="pkgItem.is_relet">
+              续租系数：
+              <el-input-number v-model="pkgItem.relet_coefficient" :max="2" :min="1"/>
+            </div>
+            <div>
+              <el-select
+                  v-model="pkgItem.selected_rent_duration"
+                  multiple
+                  placeholder="请选择租期"
+                  @change="onSelectedChange(pkgItem)"
+              >
+                <el-option
+                    v-for="duration in pkgItem.rent_duration"
+                    :key="duration"
+                    :label="`${duration}${pkgItem.unit}`"
+                    :value="duration"
                 />
-                <span>{{ item.name }}</span>
-              </div>
-            </el-checkbox>
-          </el-checkbox-group>
+              </el-select>
+            </div>
+          </view>
         </div>
-        <div v-if="attrItem.canAddAttribute" class="sku-form-add-tags">
-          <el-input
-              v-model="inputValues[attrIndex]"
-              placeholder="请输入规格名称"
-              size="small"
-              @keyup.enter="onAddAttribute(attrIndex)"
-          >
-            <template #append>
-              <el-button :icon="Plus" @click="onAddAttribute(attrIndex)">添加</el-button>
-            </template>
-          </el-input>
+      </el-card>
+      <el-card>
+        <el-button @click="addSpec">添加规格</el-button>
+        <div v-for="(attrItem, attrIndex) in myAttribute" :key="attrIndex" class="sku-form-section">
+          <div class="sku-form-title">
+            <el-input
+                v-model="attrItem.name"
+                placeholder="请输入规格名称"
+                size="small"
+            >
+              <template #prepend>规格名称</template>
+            </el-input>
+          </div>
+          <div class="sku-form-tags-box">
+            <el-checkbox-group v-model="checked[attrIndex]" :disabled="disabled" class="checkbox-group">
+              <el-checkbox
+                  v-for="(item, index) in attrItem.item"
+                  :key="index"
+                  :disabled="disabled"
+                  :value="item.name"
+                  @change="checked => onCheckedChange(attrIndex, index, checked)"
+              >
+                <div class="sku-checkbox-content">
+                  <img
+                      v-if="item.image"
+                      :alt="item.name"
+                      :src="item.image"
+                      class="sku-option-image"
+                  />
+                  <el-input
+                      v-model="item.name"
+                      placeholder="请输入规格值"
+                      size="small"
+                  />
+                </div>
+              </el-checkbox>
+            </el-checkbox-group>
+          </div>
+          <div v-if="attrItem.canAddAttribute" class="sku-form-add-tags">
+            <el-input
+                v-model="inputValues[attrIndex]"
+                placeholder="请输入规格名称"
+                size="small"
+                @keyup.enter="onAddAttribute(attrIndex)"
+            >
+              <template #append>
+                <el-button :icon="Plus" @click="onAddAttribute(attrIndex)">添加</el-button>
+              </template>
+            </el-input>
+          </div>
         </div>
-      </div>
+      </el-card>
     </div>
 
     <el-form
@@ -277,7 +296,7 @@ const props = defineProps({
   // 主题风格
   theme: {
     type: Number,
-    default: 1
+    default: 2
   },
   // 是否开启异步加载
   async: {
@@ -608,18 +627,6 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
       console.log('combinationAttribute.obj', obj)
     }
 
-    // ---------
-    console.log('mwh', emitPackage.value)
-    for (let i = 0; i < emitPackage.value[0].rent_duration.length; i++) {
-      const pkgItem = emitPackage.value[0];
-      obj.pkg = {
-        ...pkgItem
-      };
-      pkg.value.forEach(v => {
-        obj.pkg[v.name] = typeof v.defaultValue !== 'undefined' ? v.defaultValue : '';
-      });
-      console.log('combinationAttribute.obj', obj)
-    }
     dataTemp.push(obj);
   } else {
     const temp = [];
@@ -842,6 +849,20 @@ const onCheckedChange = (attrIndex, itemIndex, isChecked) => {
 
 const onSelectedChange = (pkgItem) => {
   console.log(pkgItem)
+}
+
+const addSpec = () => {
+  console.log('addSpec')
+  myAttribute.value.push({
+    name: '规格' + (myAttribute.value.length + 1),
+    canAddAttribute: true,
+    item: [
+      {
+        name: '规格1',
+        checked: false
+      }
+    ]
+  });
 }
 
 // 暴露方法
