@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card>
-      {{ myAttribute }}
+      {{ form }}
     </el-card>
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
       <el-card style="margin-bottom: 20px">
@@ -17,43 +17,46 @@
               />
             </div>
           </div>
-          <view v-if="pkgItem.checked" style="display: flex;justify-content: space-between">
-            <div>
-              买断模式:
-              <el-radio-group v-model="pkgItem.buyout_mode">
-                <el-radio :value="0">不可买断</el-radio>
-                <el-radio :value="1">提前买断</el-radio>
-                <el-radio :value="2">到期买断</el-radio>
-              </el-radio-group>
-            </div>
-            <div v-if="pkgItem.buyout_mode != 0">
-              买断折扣：
-              <el-input-number v-model="pkgItem.buyout_discount" :max="100" :min="1"/>
-            </div>
-            <div>
-              是否可续租：
-              <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
-            </div>
-            <div v-if="pkgItem.is_relet">
-              续租系数：
-              <el-input-number v-model="pkgItem.relet_coefficient" :max="2" :min="1"/>
-            </div>
-            <div>
-              <el-select
-                  v-model="pkgItem.selected_rent_duration"
-                  multiple
-                  placeholder="请选择租期"
-                  @change="onSelectedChange(pkgItem)"
-              >
-                <el-option
-                    v-for="duration in pkgItem.rent_duration"
-                    :key="duration"
-                    :label="`${duration}${pkgItem.unit}`"
-                    :value="duration"
-                />
-              </el-select>
-            </div>
-          </view>
+          {{ pkgItem.checked }}
+          <template v-if="pkgItem.checked">
+            <view style="display: flex;justify-content: space-between">
+              <div>
+                买断模式:
+                <el-radio-group v-model="pkgItem.buyout_mode">
+                  <el-radio :value="0">不可买断</el-radio>
+                  <el-radio :value="1">提前买断</el-radio>
+                  <el-radio :value="2">到期买断</el-radio>
+                </el-radio-group>
+              </div>
+              <div v-if="pkgItem.buyout_mode != 0">
+                买断折扣：
+                <el-input-number v-model="pkgItem.buyout_discount" :max="100" :min="1"/>
+              </div>
+              <div>
+                是否可续租：
+                <el-switch v-model="pkgItem.is_relet" :active-value="1" :inactive-value="0"/>
+              </div>
+              <div v-if="pkgItem.is_relet">
+                续租系数：
+                <el-input-number v-model="pkgItem.relet_coefficient" :max="2" :min="1"/>
+              </div>
+              <div>
+                <el-select
+                    v-model="pkgItem.selected_rent_duration"
+                    multiple
+                    placeholder="请选择租期"
+                    @change="onSelectedChange(pkgItem)"
+                >
+                  <el-option
+                      v-for="duration in pkgItem.rent_duration"
+                      :key="duration"
+                      :label="`${duration}${pkgItem.unit}`"
+                      :value="duration"
+                  />
+                </el-select>
+              </div>
+            </view>
+          </template>
         </div>
       </el-card>
       <el-card>
@@ -89,6 +92,10 @@
                       placeholder="请输入规格值"
                       size="small"
                   />
+                  <el-icon @click="() => onDeleteAttributeItem(attrIndex, index)" class="sku-option-delete">
+                    X
+                  </el-icon>
+
                 </div>
               </el-checkbox>
             </el-checkbox-group>
@@ -126,23 +133,6 @@
               style="width: 100%"
           >
             <el-table-column prop="sku" label="SKU"></el-table-column>
-            <el-table-column
-                v-for="(col, colIndex) in emitAttribute"
-                :key="colIndex"
-                :label="col.name"
-                align="center"
-            >
-              <template #default="{ row }">
-                <div class="sku-table-cell">
-                  <img
-                      v-if="getAttributeImage(col.name, row[col.name])"
-                      :src="getAttributeImage(col.name, row[col.name])"
-                      class="sku-table-image"
-                  />
-                  <span>{{ row[col.name] }}</span>
-                </div>
-              </template>
-            </el-table-column>
 
             <el-table-column
                 v-for="(col, colIndex) in structure"
@@ -863,6 +853,10 @@ const addSpec = () => {
       }
     ]
   });
+}
+
+const onDeleteAttributeItem = (attrIndex, index) => {
+  myAttribute.value[attrIndex].item.splice(index, 1);
 }
 
 // 暴露方法
