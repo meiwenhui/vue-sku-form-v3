@@ -1,8 +1,18 @@
 <template>
   <div>
-    <el-card>
+    <el-card header="form">
       {{ form }}
     </el-card>
+    <el-card header="form">
+      {{ structure }}
+    </el-card>
+    <el-card header="emitPackage">
+      {{ emitPackage }}
+    </el-card>
+    <el-card header="emitAttribute">
+      {{ emitAttribute }}
+    </el-card>
+
     <div v-if="!disabled" :class="`sku-form-container-${theme}`" class="sku-form-container">
       <el-card style="margin-bottom: 20px">
         <div v-for="(pkgItem, pkgIndex) in myPackage" :key="pkgIndex" class="" style="display: flex;flex-flow: column;margin-bottom: 30px">
@@ -60,47 +70,43 @@
         </div>
       </el-card>
       <el-card>
-        <el-button @click="addSpec">添加规格</el-button>
+        <div style="text-align: right;margin-bottom: 10px">
+          <el-button @click="addSpec">添加规格</el-button>
+        </div>
         <div v-for="(attrItem, attrIndex) in myAttribute" :key="attrIndex" class="sku-form-section">
-          <div class="sku-form-title">
+          <div class="sku-form-title" style="margin-right: 50px">
             <el-input
                 v-model="attrItem.name"
                 placeholder="请输入规格名称"
                 size="small"
             >
-              <template #prepend>规格名称</template>
+              <template #prepend>
+                <el-checkbox v-model="attrItem.has_image" label="是否有图"/>
+              </template>
             </el-input>
           </div>
           <div class="sku-form-tags-box">
-            <el-checkbox-group v-model="checked[attrIndex]" :disabled="disabled" class="checkbox-group">
-              <el-checkbox
-                  v-for="(item, index) in attrItem.item"
-                  :key="index"
-                  :disabled="disabled"
-                  :value="item.name"
-                  @change="checked => onCheckedChange(attrIndex, index, checked)"
-              >
-                <div class="sku-checkbox-content">
-                  <img
-                      v-if="item.image"
-                      :alt="item.name"
-                      :src="item.image"
-                      class="sku-option-image"
-                  />
-                  <el-input
-                      v-model="item.name"
-                      placeholder="请输入规格值"
-                      size="small"
-                  />
-                  <el-icon @click="() => onDeleteAttributeItem(attrIndex, index)" class="sku-option-delete">
-                    X
-                  </el-icon>
 
-                </div>
-              </el-checkbox>
-            </el-checkbox-group>
+            <div class="sku-checkbox-content" v-for="(item, index) in attrItem.items"
+                 :key="index">
+              <img
+                  v-if="attrItem.has_image"
+                  :alt="item.name"
+                  :src="item.image"
+                  class="sku-option-image"
+              />
+              <el-input
+                  v-model="item.value"
+                  placeholder="请输入规格值"
+                  size="small"
+              />
+              <el-icon @click="() => onDeleteAttributeItem(attrIndex, index)" class="sku-option-delete">
+                X
+              </el-icon>
+
+            </div>
           </div>
-          <div v-if="attrItem.canAddAttribute" class="sku-form-add-tags">
+          <div class="sku-form-add-tags">
             <el-input
                 v-model="inputValues[attrIndex]"
                 placeholder="请输入规格名称"
@@ -153,6 +159,9 @@
               <template #default="{ row, $index }">
                 <div v-if="col.type === 'slot'">
                   <slot :index="$index" :name="col.name" :row="row"/>
+                </div>
+                <div v-if="col.type === 'switch'">
+                  <el-switch v-model="row[col.name]" :active-value="1" :inactive-value="0"/>
                 </div>
                 <el-form-item
                     v-else
@@ -240,7 +249,34 @@ const props = defineProps({
   //
   sourcePackage: {
     type: Array,
-    default: () => []
+    default: () => [
+      {
+        "unit": "天", // 租期单位
+        "checked": false, // 租期单位
+        "name": "租完归还",  // 租期名称
+        "buyout_mode": 1, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
+        "is_relet": 0,// 是否可续租； 可选：0：不可续租；1：可续租
+        "rent_mode": 2, // 租赁模式； 可选：1：租完即送；2：灵活租
+        "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
+        "relet_coefficient": 1, // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+        "rent_duration": [ // 可租赁时间列表
+          180, 365
+        ]
+      },
+      {
+        "checked": false,
+        "unit": "天", // 租期单位
+        "name": "灵活租",  // 租期名称
+        "buyout_mode": 1, // 买断模式； 可选：0：不可买断；1：提前买断；2：到期买断
+        "is_relet": 1,// 是否可续租； 可选：0：不可续租；1：可续租
+        "rent_mode": 3, // 租赁模式； 可选：1：租完即送；2：灵活租
+        "buyout_discount": 100,  // 买断折扣； 当  buyout_mode != 1时显示，取值范围 0-100
+        "relet_coefficient": 1, // 续租系数； 当  is_relet = 1时显示，取值范围 1-2
+        "rent_duration": [ // 可租赁时间列表
+          180, 365
+        ]
+      }
+    ]
   },
   pkg: {
     type: Array,
@@ -264,8 +300,9 @@ const props = defineProps({
   structure: {
     type: Array,
     default: () => [
+      {name: 'status', type: 'switch', label: '状态'},
       {name: 'price', type: 'input', label: '价格'},
-      {name: 'stock', type: 'input', label: '库存'}
+      {name: 'stock', type: 'input', label: '库存'},
     ]
   },
   // sku 字段分隔符
@@ -300,7 +337,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:package', 'update:attribute', 'update:sku', 'validate'])
+const emit = defineEmits(['update:pkg', 'update:attribute', 'update:sku', 'validate'])
 
 // 使用toRefs优化props解构，保持响应性
 const {sourceAttribute, attribute, sourcePackage, pkg, sku, structure, separator, emptySku, async: isAsync, canAddAttribute} = toRefs(props)
@@ -325,9 +362,6 @@ const myAttribute = ref([])
 
 // 套餐数据(包含选中状态)
 const myPackage = ref([])
-
-// 用于管理checkbox组的选中状态
-const checked = ref([])
 
 
 // 计算规则
@@ -354,25 +388,19 @@ const isBatch = computed(() => {
 
 // 仅输出勾选的属性
 const emitAttribute = computed(() => {
-  return myAttribute.value.map(attr => {
-    // 过滤选中的项目并包含完整的属性信息
-    const selectedItems = attr.item
-        .filter(item => item.checked)
-        .map(item => {
-          // 仅移除checked状态，保留其他所有属性
-          const {checked, ...itemDetail} = item;
-          return itemDetail;
-        });
-    console.log('emitAttribute.itemDetail', selectedItems)
-    return {
-      name: attr.name,
-      item: selectedItems
-    };
-  }).filter(attr => attr.item.length > 0);
+  return myAttribute.value
 })
 
 const emitPackage = computed(() => {
-  return myPackage.value.filter(f => f.rent_duration.length > 0);
+  return myPackage.value.filter(f => f.checked).map(item => {
+    const _pkg = {
+      ...item,
+      rent_duration: item.selected_rent_duration
+    }
+    delete _pkg.selected_rent_duration
+    delete _pkg.checked
+    return _pkg;
+  });
 })
 
 // 初始化方法
@@ -381,65 +409,15 @@ const init = () => {
     isInit.value = true
     // 初始化 myAttribute
     const newMyAttribute = []
-    // 根据 sourceAttribute 复原 myAttribute 的结构
-    sourceAttribute.value.forEach(v => {
+    attribute.value.forEach(v => {
       const temp = {
-        name: v.name,
-        canAddAttribute: typeof v.canAddAttribute !== 'undefined' ? v.canAddAttribute : canAddAttribute.value,
-        addAttribute: '',
-        item: []
+        ...v,
       }
-
-      // 处理规格项，支持字符串或对象格式
-      v.item.forEach(itemValue => {
-        if (typeof itemValue === 'string') {
-          // 处理字符串类型的规格项（向后兼容）
-          temp.item.push({
-            name: itemValue,
-            checked: false
-          })
-        } else {
-          // 处理对象类型的规格项（新格式）
-          temp.item.push({
-            ...itemValue,
-            checked: false
-          })
-        }
-      })
-
       newMyAttribute.push(temp)
     })
 
-    // 初始化输入值数组
-    inputValues.value = Array(sourceAttribute.value.length).fill('');
 
-    // 根据 attribute 更新 myAttribute，处理已选中的属性
-    attribute.value.forEach(attrVal => {
-      newMyAttribute.forEach(myAttrVal => {
-        if (attrVal.name === myAttrVal.name) {
-          attrVal.item.forEach(attrItem => {
-            const attrName = typeof attrItem === 'string' ? attrItem : attrItem.name;
-
-            // 查找匹配的属性项
-            const existingItem = myAttrVal.item.find(myAttrItem => myAttrItem.name === attrName);
-
-            if (existingItem) {
-              // 如果找到匹配项，标记为选中
-              existingItem.checked = true;
-            } else {
-              // 如果没找到，添加新项
-              myAttrVal.item.push({
-                ...(typeof attrItem === 'string' ? {name: attrItem} : attrItem),
-                checked: true
-              });
-            }
-          });
-        }
-      });
-    });
-
-    myAttribute.value = newMyAttribute
-
+    myAttribute.value = attribute.value
 
     // ----------------------------------------------------------------------------------------------------
     // 初始化 myPackage
@@ -447,60 +425,21 @@ const init = () => {
     // 根据 sourcePackage 复原 myPackage 的结构
     sourcePackage.value.forEach(v => {
       const temp = {
-        unit: v.unit,
-        name: v.name,
-        buyout_mode: v.buyout_mode,
-        is_relet: v.is_relet,
-        rent_mode: v.rent_mode,
-        buyout_discount: v.buyout_discount,
-        relet_coefficient: v.relet_coefficient,
-        rent_duration: [],
+        ...v,
         selected_rent_duration: [],
-        addDuration: false,
+        checked: false
       }
-
-      // 处理规格项，支持字符串或对象格式
-      v.rent_duration.forEach(itemValue => {
-        if (typeof itemValue === 'string') {
-          // 处理字符串类型的规格项（向后兼容）
-          temp.rent_duration.push(itemValue)
-        } else {
-          // 处理对象类型的规格项（新格式）
-          temp.rent_duration.push(itemValue)
-        }
-      })
-      newMyPackage.push(temp)
-    })
-
-    // 初始化输入值数组
-    // inputValues.value = Array(sourcePackage.value.length).fill('');
-    console.log('pkg.value.forEach -> newMyPackage.forEach', pkg.value, newMyPackage)
-    // 根据 attribute 更新 myAttribute，处理已选中的属性
-    pkg.value.forEach(attrVal => {
-      newMyPackage.forEach(myPackageVal => {
-
-        if (attrVal.rent_mode === myPackageVal.rent_mode) {
-
-          let newRentDuration = [...new Set([...myPackageVal.rent_duration, ...attrVal.rent_duration])]
-          Object.assign(myPackageVal, attrVal)
-
-          myPackageVal.rent_duration = newRentDuration
-          myPackageVal.checked = true
-          attrVal.rent_duration.forEach(attrItem => {
-            // 查找匹配的属性项
-            const existingItem = myPackageVal.rent_duration.find(myAttrItem => myAttrItem === attrItem);
-            if (existingItem) {
-              // 如果找到匹配项，标记为选中
-              myPackageVal.selected_rent_duration.push(attrItem)
-            } else {
-              // 如果没找到，添加新项
-              myPackageVal.rent_duration.push(attrItem)
-            }
-          });
+      pkg.value.forEach(attrVal => {
+        if (attrVal.rent_mode === v.rent_mode) {
+          Object.assign(temp, attrVal)
+          let newRentDuration = [...new Set([...v.rent_duration, ...attrVal.rent_duration])].sort((a, b) => a - b)
+          temp.rent_duration = newRentDuration
+          temp.checked = true
+          temp.selected_rent_duration = attrVal.rent_duration
         }
       });
-    });
-
+      newMyPackage.push(temp)
+    })
     myPackage.value = newMyPackage
     // ----------------------------------------------------------------------------------------------------
 
@@ -522,16 +461,6 @@ const init = () => {
   })
 }
 
-// 获取属性的图片路径
-const getAttributeImage = (attrName, attrValue) => {
-  if (!attrName || !attrValue) return null;
-
-  const attrGroup = myAttribute.value.find(attr => attr.name === attrName);
-  if (!attrGroup) return null;
-
-  const attrItem = attrGroup.item.find(item => item.name === attrValue);
-  return attrItem?.image || null;
-}
 
 onMounted(() => {
   console.log('初始化', isAsync.value)
@@ -563,6 +492,17 @@ watch(myAttribute, () => {
       })
       form.skuData.push(obj)
     }
+    clearValidate()
+  })
+}, {deep: true})
+
+watch(myPackage, () => {
+  if (!isInit.value) {
+    // 更新父组件
+    emit('update:pkg', emitPackage.value)
+  }
+  nextTick(() => {
+
     clearValidate()
   })
 }, {deep: true})
@@ -600,9 +540,9 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
   if (index === 0) {
     console.log('combinationAttribute.emitAttribute.index.0', emitAttribute.value)
     let obj = {};
-    for (let i = 0; i < emitAttribute.value[0].item.length; i++) {
-      const attrItem = emitAttribute.value[0].item[i]; // {"name" : "黑"}
-      const attrName = attrItem.name; // 黑
+    for (let i = 0; i < emitAttribute.value[0].items.length; i++) {
+      const attrItem = emitAttribute.value[0].items[i]; // {"name" : "黑"}
+      const attrName = attrItem.value; // 黑
       obj = {
         sku: attrName,
         skuData: {  // 存储完整的SKU对象数据
@@ -621,9 +561,9 @@ const combinationAttribute = (index = 0, dataTemp = []) => {
   } else {
     const temp = [];
     for (let i = 0; i < dataTemp.length; i++) {
-      for (let j = 0; j < emitAttribute.value[index].item.length; j++) {
-        const attrItem = emitAttribute.value[index].item[j];
-        const attrName = attrItem.name;
+      for (let j = 0; j < emitAttribute.value[index].items.length; j++) {
+        const attrItem = emitAttribute.value[index].items[j];
+        const attrName = attrItem.value;
         const newItem = JSON.parse(JSON.stringify(dataTemp[i]));
 
         // 添加新的属性名称
@@ -713,15 +653,14 @@ const onAddAttribute = (index) => {
   }
 
   // 检查重复
-  if (myAttribute.value[index].item.some(item => item.name === newValue)) {
+  if (myAttribute.value[index].items.some(item => item.name === newValue)) {
     ElMessage.warning('请勿添加相同规格');
     return;
   }
 
   // 添加新属性，并默认选中
-  myAttribute.value[index].item.push({
-    name: newValue,
-    checked: true
+  myAttribute.value[index].items.push({
+    value: newValue,
   });
 
   // 清空输入框
@@ -817,19 +756,11 @@ const onAddAttributeWithImage = (index, name, imagePath) => {
   myAttribute.value[index].item.push({
     name: newValue,
     image: imagePath || '',
-    checked: true
   });
 
   return true;
 }
 
-// 监听属性变化，初始化checked数组
-watch(() => myAttribute.value, () => {
-  // 初始化checked数组
-  checked.value = myAttribute.value.map(attr =>
-      attr.item.filter(item => item.checked).map(item => item.name)
-  )
-}, {deep: true, immediate: true})
 
 // 处理checkbox变化
 const onCheckedChange = (attrIndex, itemIndex, isChecked) => {

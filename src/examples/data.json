@@ -1,0 +1,87 @@
+{
+  "name": "一加 13 黑曜秘境 高通骁龙8至尊版",
+  "spec": [
+    {
+      "name": "颜色",
+      "has_image": 1,
+      "items": [
+        {
+          "value": "黑色",
+          "image": "https://anxinzu-cdn.oss-cn-hangzhou.aliyuncs.com/202504/kdd_bczl_1745485158795.jpg"
+        }
+      ]
+    },
+    {
+      "name": "内存",
+      "has_image": false,
+      "items": [
+        {
+          "value": "16G"
+        }
+      ]
+    }
+  ],
+  "pkg": [
+    {
+      "unit": "天",
+      "name": "租完可归还/买断/续租",
+      "buyout_mode": 1,
+      "is_relet": 1,
+      "rent_mode": 2,
+      "buyout_discount": 100,
+      "relet_coefficient": 1.5,
+      "rent_duration": [
+        90,
+        365
+      ]
+    }
+  ],
+  "sku": [
+    {
+      "uniqid": "122333444455555",
+      "sku": "2;黑;16G",
+      "price": 200,
+      "stock": 200,
+      "status": 0,
+      "spec": [
+        {
+          "name": "颜色",
+          "has_image": 1,
+          "items": [
+            {
+              "value": "黑",
+              "image": "https://anxinzu-cdn.oss-cn-hangzhou.aliyuncs.com/202504/kdd_bczl_1745485158795.jpg"
+            }
+          ]
+        },
+        {
+          "name": "内存",
+          "items": [
+            {
+              "value": "16G"
+            }
+          ]
+        }
+      ],
+      "pkg": {
+        "unit": "天",
+        "name": "租完归还",
+        "buyout_mode": 1,
+        "is_relet": 0,
+        "rent_mode": 2,
+        "buyout_discount": 100,
+        "relet_coefficient": 1,
+        "duration_price_list": [
+          {
+            "duration": 365,
+            "total_rent_price": 2200
+          },
+          {
+            "duration": 90,
+            "total_rent_price": 2400
+          }
+        ]
+      }
+    }
+  ]
+}
