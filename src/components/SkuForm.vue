@@ -182,14 +182,14 @@
 
                 <!-- pkg -->
                 <el-table-column
-                    v-for="(aa, dIndex) in pkgItem.selected_rent_duration"
+                    v-for="(aa, dIndex) in pkgItem.pkg.selected_rent_duration"
                     :key="dIndex"
                     align="center"
                 >
                   <template #header>{{ aa }}{{ pkgItem.unit }}</template>
                   <template #default="{ row, $index }">
                     <el-input
-
+                        v-model="row.pkg.duration_price_list[dIndex].total_rent_price"
                         size="small"
                     />
                   </template>
